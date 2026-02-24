@@ -1,0 +1,169 @@
+/* sidepanel.css – Apple Intelligence / Vision Pro Inspired */
+/* STYLING */
+:root {
+  --ai-purple: #7c3aed;
+  --ai-blue: #0a84ff;
+  --ai-indigo: #4f46e5;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.15);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.35);
+  --glow: 0 0 40px rgba(124, 58, 237, 0.4);
+}
+
+/* ===== Body ===== */
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+               "Segoe UI", Roboto, sans-serif;
+
+  padding: 20px;
+  width: 320px;
+  box-sizing: border-box;
+  margin: 0;
+
+  color: #ffffff;
+
+  /* ONE single smooth gradient */
+  background: linear-gradient(
+    to bottom,
+    #c0c7ff 0%,
+    #4a4ac5 100%
+  );
+
+  background-attachment: fixed;
+}
+
+/* Ambient Motion */
+@keyframes ambientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ===== Ambient Glow Layer ===== */
+
+body::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle at center,
+              rgba(124, 58, 237, 0.25),
+              rgba(10, 132, 255, 0.15),
+              transparent 60%);
+  filter: blur(80px);
+  animation: pulseGlow 10s ease-in-out infinite;
+  z-index: 0;
+}
+
+@keyframes pulseGlow {
+  0%,100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.1); }
+}
+
+/* Ensure content above glow */
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Button (Floating Intelligence Button) ===== */
+
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+  margin-bottom: 20px;
+
+  color: white;
+
+  background: linear-gradient(135deg, var(--ai-purple), var(--ai-blue));
+  box-shadow:
+    0 10px 40px rgba(99, 25, 227, 0.5),
+    0 0 30px rgba(10, 132, 255, 0.4);
+
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 15px 60px rgba(121, 71, 209, 0.592),
+    0 0 50px rgba(10, 120, 255, 0.6);
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+/* ===== Results Layout ===== */
+
+#results {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ===== Vision Pro Glass Card ===== */
+
+.paper {
+  padding: 18px;
+  border-radius: 24px;
+
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+
+  border: 1px solid var(--glass-border);
+
+  box-shadow:
+    var(--shadow-soft),
+    inset 0 0 30px rgba(255,255,255,0.05);
+
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.paper:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow:
+    0 30px 80px rgba(9, 9, 13, 0.5),
+    0 0 60px rgba(124,58,237,0.3);
+}
+
+/* ===== Typography ===== */
+
+.paper-title {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.3px;
+  margin-bottom: 8px;
+}
+
+.paper-year {
+  font-size: 12px;
+  color: rgba(220, 200, 255, 0.65);
+  margin-bottom: 10px;
+}
+
+/* ===== Intelligence Link Style ===== */
+
+a {
+  font-size: 13px;
+  font-weight: 500;
+  color: #7951ee;
+  text-decoration: none;
+  transition: all 0.25s ease;
+}
+
+a:hover {
+  color: #ae9eed;
+  text-shadow: 0 0 12px rgba(182, 106, 236, 0.766);
+}

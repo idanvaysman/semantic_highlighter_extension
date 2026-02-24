@@ -76,8 +76,57 @@ document.getElementById("captureBtn").addEventListener("click", async () => {
       .then((data) => {
 
         // 'data' is now the parsed JSON sent back by FastAPI
-        // Example: { status: "received", chars: 42 }
         console.log("Backend response:", data);
+
+        // -------------------------------------------------------
+        // Render returned articles in the side panel
+        // -------------------------------------------------------
+
+        const resultsContainer = document.getElementById("results");
+
+        if (!resultsContainer) {
+          console.log("No results container found in HTML.");
+          return;
+        }
+
+        // Clear old results
+        resultsContainer.innerHTML = "";
+
+        // Check if backend returned papers
+        if (!data.papers || data.papers.length === 0) {
+          resultsContainer.innerHTML = "<p>No articles found.</p>";
+          return;
+        }
+
+        // Loop through each paper and create UI elements
+        data.papers.forEach((paper) => {
+
+          const paperDiv = document.createElement("div");
+          paperDiv.style.marginBottom = "12px";
+          paperDiv.style.borderBottom = "1px solid #ddd";
+          paperDiv.style.paddingBottom = "8px";
+
+          const title = document.createElement("div");
+          title.textContent = paper.title || "Untitled";
+          title.style.fontWeight = "bold";
+          title.style.fontSize = "14px";
+
+          const year = document.createElement("div");
+          year.textContent = paper.year || "";
+          year.style.fontSize = "12px";
+          year.style.color = "#666";
+
+          const link = document.createElement("a");
+          link.href = paper.url;
+          link.textContent = "View Paper";
+          link.target = "_blank";
+
+          paperDiv.appendChild(title);
+          paperDiv.appendChild(year);
+          paperDiv.appendChild(link);
+
+          resultsContainer.appendChild(paperDiv);
+        });
 
       })
       // If anything fails (network error, server down, CORS issue, etc.)
