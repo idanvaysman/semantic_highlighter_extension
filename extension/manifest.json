@@ -1,0 +1,38 @@
+
+{
+  "manifest_version": 3,
+  "name": "Semantic Highlight Explorer",
+  "version": "1.0",
+  "description": "Capture highlighted text and explore similar articles.",
+
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs",
+    "sidePanel"
+  ],
+
+  "host_permissions": [
+    "<all_urls>"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  
+  "background": {
+     "service_worker": "background.js"
+   },
+   
+   "action": {},
+   "side_panel": {
+     "default_path": "sidepanel.html"
+   }
+}
