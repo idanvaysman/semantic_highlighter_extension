@@ -3,3 +3,4 @@ Step 2 - Create a venv within the backend folder python3 -m venv venv
 Step 3 - Activate the venv: source venv/bin/Activate
 Step 4 - download the requiremenits: pip install -r requiremenits.txt
 Step 5 - Go to chrome://extensions , press load unpacked and load the extension folder
+Step 6 - to run the local server: python -m uvicorn main:app --reload
