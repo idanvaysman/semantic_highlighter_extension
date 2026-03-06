@@ -2,6 +2,8 @@
 
 console.log("Side panel loaded.");
 
+let pendingRankPromise = null;
+
 document.getElementById("captureBtn").addEventListener("click", async () => {
   console.log("Capture button clicked.");
 
@@ -49,38 +51,28 @@ document.getElementById("captureBtn").addEventListener("click", async () => {
       console.log("FULL PACKET:", packet);
 
       // STEP 3) Send the packet to the backend server ---------
-      fetch("http://127.0.0.1:8000/capture", {
-
-        // Use HTTP POST because we are sending new data
+      
+      const searchPromise = fetch("http://127.0.0.1:8000/search", {
         method: "POST",
-
-        // Tell the server that the body is JSON
         headers: {
           "Content-Type": "application/json"
         },
-
-        // Convert the JavaScript object (packet) into a JSON string
-        // HTTP can only send text, so we must stringify the object
         body: JSON.stringify(packet)
+      }).then((res) => res.json());
 
-      })
-      // When the HTTP response comes back...
-      .then((res) => {
+      pendingRankPromise = searchPromise.then(searchData => {
+        console.log("Search complete, starting background rank with search results...");
+        return fetch("http://127.0.0.1:8000/rank", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(searchData) 
+        }).then(res => res.json());
+      });
 
-        // 'res' is the raw HTTP response object
-        // It is NOT the JSON yet — we must extract the JSON body
-        return res.json();  // This returns another Promise
-
-      })
-      // When the JSON parsing is finished...
-      .then((data) => {
-
-        // 'data' is now the parsed JSON sent back by FastAPI
-        console.log("Backend response:", data);
-
-        // -------------------------------------------------------
-        // Render returned articles in the side panel
-        // -------------------------------------------------------
+      searchPromise.then((data) => {
+        console.log("Backend response (Search):", data);
 
         const resultsContainer = document.getElementById("results");
 
@@ -89,53 +81,110 @@ document.getElementById("captureBtn").addEventListener("click", async () => {
           return;
         }
 
-        // Clear old results
         resultsContainer.innerHTML = "";
 
-        // Check if backend returned papers
         if (!data.papers || data.papers.length === 0) {
           resultsContainer.innerHTML = "<p>No articles found.</p>";
           return;
         }
 
-        // Loop through each paper and create UI elements
-        data.papers.forEach((paper) => {
+        renderPapersList(data.papers);
 
-          const paperDiv = document.createElement("div");
-          paperDiv.style.marginBottom = "12px";
-          paperDiv.style.borderBottom = "1px solid #ddd";
-          paperDiv.style.paddingBottom = "8px";
-
-          const title = document.createElement("div");
-          title.textContent = paper.title || "Untitled";
-          title.style.fontWeight = "bold";
-          title.style.fontSize = "14px";
-
-          const year = document.createElement("div");
-          year.textContent = paper.year || "";
-          year.style.fontSize = "12px";
-          year.style.color = "#666";
-
-          const link = document.createElement("a");
-          link.href = paper.url;
-          link.textContent = "View Paper";
-          link.target = "_blank";
-
-          paperDiv.appendChild(title);
-          paperDiv.appendChild(year);
-          paperDiv.appendChild(link);
-
-          resultsContainer.appendChild(paperDiv);
-        });
+        const analyzeBar = document.getElementById("analyzeBar");
+        if (analyzeBar) analyzeBar.style.display = "flex";
 
       })
-      // If anything fails (network error, server down, CORS issue, etc.)
       .catch((err) => {
-
-        // Log the error so we can debug what went wrong
-        console.log("Fetch error:", err);
-
+        console.log("Fetch error (Search):", err);
       });
     }
   );
+});
+
+function renderPapersList(papers) {
+  const resultsContainer = document.getElementById("results");
+  resultsContainer.innerHTML = "";
+
+  if (!papers || !Array.isArray(papers)) {
+    console.log("Error: 'papers' is not a valid list", papers);
+    return;
+  }
+
+  papers.forEach((paper) => {
+    const paperDiv = document.createElement("div");
+    // Removed borderBottom from here as requested
+    paperDiv.style.marginBottom = "8px"; 
+    paperDiv.style.paddingBottom = "4px";
+
+    const title = document.createElement("div");
+    title.textContent = paper.title || "Untitled";
+    title.style.fontWeight = "bold";
+    title.style.fontSize = "14px";
+    title.style.color = "white";
+
+    const year = document.createElement("div");
+    year.textContent = paper.year || "";
+    year.style.fontSize = "12px";
+    year.style.color = "rgba(255, 255, 255, 0.6)";
+
+    const link = document.createElement("a");
+    link.href = paper.url;
+    link.textContent = "View Paper";
+    link.target = "_blank";
+    // Using your darker indigo for better legibility
+    link.style.color = "#4338ca"; 
+
+    paperDiv.appendChild(title);
+    paperDiv.appendChild(year);
+    paperDiv.appendChild(link);
+
+    // THE LINE: Placed strictly AFTER the content
+    const line = document.createElement("div");
+    // Changed to rgba for a better "Glass" look consistent with your theme
+    line.style.borderBottom = "1px solid rgba(255, 255, 255, 0.2)"; 
+    line.style.marginTop = "12px";
+    line.style.marginBottom = "20px"; 
+
+    resultsContainer.appendChild(paperDiv);
+    resultsContainer.appendChild(line);
+  });
+}
+
+// Updated Animation Logic inside DOMContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+  const bar = document.getElementById("analyzeBar");
+  const star = document.getElementById("aiStar");
+  const label = document.getElementById("aiLabel");
+
+  if (bar) bar.style.display = "none";
+
+  bar.addEventListener("click", () => {
+    if (!pendingRankPromise) return;
+
+    label.textContent = "Analyzing papers...";
+    
+    // Reset state and start acceleration
+    star.classList.remove("spin-stop", "spin-loop", "spin-none");
+    star.classList.add("spin-start");
+
+    pendingRankPromise.then((rankData) => {
+      // Switch to constant fast loop after acceleration finishes
+      setTimeout(() => {
+        star.classList.remove("spin-start");
+        star.classList.add("spin-loop");
+      }, 1000);
+
+      setTimeout(() => {
+        // STOP: Remove spinning and add the landing animation
+        star.classList.remove("spin-start", "spin-loop");
+        star.classList.add("spin-stop");
+        
+        renderPapersList(rankData.papers);
+        label.textContent = "AI Analysis Complete";
+      }, 2000); // Slightly longer to let the user feel the "work"
+    }).catch(err => {
+      console.log("Rank Error:", err);
+      star.classList.add("spin-none");
+    });
+  });
 });

@@ -167,3 +167,90 @@ a:hover {
   color: #ae9eed;
   text-shadow: 0 0 12px rgba(182, 106, 236, 0.766);
 }
+/* AI bottom bar */
+#analyzeBar {
+  /* CHANGE: Changed from absolute to sticky and set bottom/z-index */
+  position: sticky;
+  bottom: 20px;
+  z-index: 999; 
+  
+  margin-top: auto; /* Pushes it down if container is flex */
+  left: 20px;
+  right: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 12px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(255,255,255,0.25);
+
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+#analyzeBar:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+/* Update the sparkle class to ensure it can rotate */
+.sparkle {
+  display: inline-block; /* Essential for transform/rotation to work */
+  font-size: 16px;
+  color: #bfe0fc;
+  text-shadow: 0 0 6px rgba(120, 190, 255, 0.8);
+  transition: transform 0.3s ease; /* Helps transitions feel smoother */
+}
+
+/* Add this class to handle the "stopped" state without animation */
+.spin-none {
+  animation: none !important;
+  transform: rotate(0deg);
+}
+
+.aiLabel {
+  line-height: 1;
+}
+
+/* accelerate */
+@keyframes starAccelerate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(720deg); }
+}
+
+/* constant spin */
+@keyframes starSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* decelerate and land upright */
+@keyframes starDecelerate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* start slow → speed up */
+.spin-start {
+  animation: starAccelerate 1.2s cubic-bezier(.25,.1,.25,1);
+}
+
+/* fast loop */
+.spin-loop {
+  animation: starSpin 0.6s linear infinite;
+}
+
+/* CHANGE: This will now stop the star and keep it upright */
+.spin-stop {
+  animation: starDecelerate 0.8s ease-out forwards;
+}

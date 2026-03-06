@@ -1,4 +1,4 @@
-import requests
+import requests # http library to make API calls to OpenAlex
 
 # call the openalex api 
 
@@ -18,7 +18,12 @@ def find_papers(query_text):
 
     results = response.json().get("results", [])
 
-    return [normalize_openalex_paper(item) for item in results]
+    papers = []
+    for item in results:
+        paper = normalize_openalex_paper(item)
+        if paper["abstract"] and paper["url"]: # only include papers with abstracts and URLs
+            papers.append(paper)      
+    return papers
 
 # normalize the openalex response to include the title, URL (doi or PDF), and publication year.
 
