@@ -1,110 +1,156 @@
-# Semantic Highlight Explorer
+# ResearchAI
 
-## Overview
+**ResearchAI** is a Chrome extension designed to assist academic research by capturing context from webpages and retrieving relevant scholarly articles using semantic similarity and AI-based ranking.
 
-Semantic Highlight Explorer is a browser-based tool that allows users to highlight text on a webpage and discover contextually related articles using semantic similarity.
+The system combines a lightweight browser extension with a Python backend that retrieves academic papers and ranks them based on how closely they relate to highlighted content on a webpage.
 
-The system combines:
-
-- A Chrome extension for capturing highlighted content
-- A Python backend for natural language processing
-- Hybrid retrieval (lexical search + semantic ranking)
-- Vector embeddings for similarity scoring
-
-The goal of this project is to explore how modern information retrieval systems combine keyword search and semantic embeddings to return relevant results efficiently.
+The goal of the project is to explore how modern information retrieval systems can combine traditional search with semantic embeddings to return more meaningful research results.
 
 ---
 
-## Why This Project
+# Motivation
 
-Traditional search engines rely heavily on keyword matching. While effective, keyword-based retrieval can miss relevant content that uses different phrasing or vocabulary.
+Most search tools rely heavily on **keyword matching**, which can miss relevant research when different terminology or phrasing is used.
 
-This project investigates how semantic embeddings can improve relevance by matching meaning rather than exact wording.
+ResearchAI explores how **semantic similarity models** can improve retrieval by comparing the meaning of text rather than relying solely on exact keyword overlap.
 
-It is designed as a learning-focused system that demonstrates:
+The project is designed to help users move directly from reading online material to discovering **relevant academic papers**. Instead of manually searching through academic databases, users can highlight a passage on any webpage and retrieve related research articles.
 
-- Hybrid search architecture
-- Embedding-based similarity ranking
-- Retrieval system design tradeoffs
-- Client–server interaction
-- External API integration
-- Performance and latency considerations
+To make access easier for students, the system also integrates with the **University of California, Santa Cruz (UCSC) library proxy**. When available, article links are routed through the UCSC proxy so students with valid UCSC accounts can access institutional subscriptions without manually navigating the library website.
 
 ---
 
-## High-Level Architecture
+# System Architecture
 
-1. User highlights text in the browser.
-2. The Chrome extension captures the highlighted text and surrounding context.
-3. The extension sends this data to the backend.
-4. The backend:
-   - Extracts keywords for candidate retrieval
-   - Retrieves a candidate pool from an external source
-   - Generates embeddings for both the query and candidate articles
-   - Computes similarity scores
-   - Ranks and returns the most relevant results
-5. The extension displays the ranked articles to the user.
+ResearchAI follows a **client–server architecture** consisting of two main components: a browser extension and a backend retrieval service.
 
 ---
 
-## Tech Stack
+## Browser Extension
 
-### Frontend
+The Chrome extension captures contextual information from the active webpage, including:
+
+- highlighted text selected by the user  
+- the surrounding paragraph  
+- page title  
+- page URL  
+
+This information is sent to the backend to generate a research query.
+
+The extension communicates with the backend through HTTP requests and displays returned results inside the Chrome side panel.
+
+---
+
+## Backend Retrieval Service
+
+The backend is responsible for retrieving academic papers and ranking them based on relevance.
+
+The process works as follows:
+
+1. The extension sends the captured context to a `/search` endpoint.
+2. The backend sends a query to academic data sources such as **OpenAlex**.
+3. A set of related research papers is returned.
+4. Embeddings are generated for the highlighted text and each paper using a sentence-transformer model.
+5. Similarity scores are calculated to measure semantic relevance.
+6. A **cross-encoder re-ranking model** performs a second pass to refine the ranking of results.
+7. The ranked papers are returned to the extension.
+
+This multi-stage ranking approach improves relevance by combining **fast embedding similarity with deeper cross-encoder analysis**.
+
+---
+
+# Tech Stack
+
+## Frontend
 - Chrome Extension (Manifest V3)
 - Vanilla JavaScript
+- Chrome Side Panel API
 
-### Backend
+## Backend
 - Python
 - FastAPI
-- spaCy (keyword extraction)
-- sentence-transformers (embeddings)
 
-### External Data Sources
-- Academic or search APIs (configurable)
+## Machine Learning / NLP
+- sentence-transformers for semantic embeddings
+- cross-encoder model for re-ranking search results
+- cosine similarity for embedding comparison
 
-### Database (Optional / Evolving)
-- PostgreSQL (e.g., Supabase)
+## External Data Sources
+- OpenAlex academic paper API
+
+## Database (Planned)
+- PostgreSQL
 - pgvector for vector similarity search
 
 ---
 
-## Design Principles
+# Data Flow
 
-- Hybrid retrieval (lexical narrowing followed by semantic ranking)
-- Clear separation of concerns (extension vs backend)
-- Incremental complexity (start simple, optimize later)
-- Learning-oriented implementation (avoid black-box abstractions)
-- Measurable performance and evaluation
-
----
-
-## Current Status
-
-This project is under active development.
-
-Planned milestones include:
-
-- Highlight capture and context extraction
-- Candidate retrieval from external APIs
-- Embedding-based similarity ranking
-- Caching and performance optimization
-- Optional vector indexing
+1. A user highlights text on a webpage.
+2. The extension captures the highlighted text and surrounding context.
+3. The context is sent to the backend `/search` endpoint.
+4. The backend retrieves related research papers from OpenAlex.
+5. Embeddings are generated for the query and each paper.
+6. Similarity scores are calculated.
+7. A cross-encoder model refines the ranking of results.
+8. Ranked results are returned to the extension.
+9. When available, article links are routed through the **UCSC library proxy** to allow institutional access.
 
 ---
 
-## Future Directions
+# Key Engineering Concepts
 
-Potential extensions include:
+### Semantic Similarity Ranking
 
-- Improved contextual modeling
-- Re-ranking strategies
-- Vector database integration
-- Evaluation benchmarking
-- Broader domain and content support
-- Enhanced UI and interaction features
+The system uses vector embeddings to measure how closely research papers relate to the highlighted passage. This allows relevant research to be discovered even when different wording is used.
+
+### Cross-Encoder Re-Ranking
+
+After initial similarity scoring, a cross-encoder model performs a second ranking pass.  
+This model evaluates the query and each paper together, allowing it to capture deeper contextual relationships.
+
+### Context-Aware Queries
+
+Instead of relying only on keywords, the system captures both the **highlighted text and the surrounding paragraph**, providing richer context for retrieving relevant research papers.
+
+### Modular System Design
+
+The browser extension and backend services are independent components.  
+This architecture allows improvements to the retrieval pipeline without requiring changes to the extension.
+
+### Integration with Academic Infrastructure
+
+By routing links through the **UCSC library proxy**, the system allows students to access subscription-based research papers using their university authentication.
 
 ---
 
-## Running the Project
+# Current Status
+
+The project currently supports:
+
+- capturing highlighted text and surrounding context from webpages  
+- retrieving academic papers using the OpenAlex API  
+- semantic similarity ranking of research papers  
+- cross-encoder re-ranking for improved relevance  
+- communication between the Chrome extension and Python backend  
+- routing research links through the UCSC proxy for institutional access  
+
+---
+
+# Future Improvements
+
+Planned improvements include:
+
+- **Keyword extraction using spaCy** to generate more precise search queries from highlighted text  
+- **Vector database integration** using pgvector or FAISS for faster similarity search  
+- **Query expansion techniques** to improve recall  
+- **Caching and latency optimizations** for faster responses  
+- **Evaluation benchmarks** to measure retrieval performance  
+
+Keyword extraction with spaCy would allow the system to automatically identify key phrases and nouns within highlighted passages, improving the quality of queries sent to academic search APIs.
+
+---
+
+# Running the Project
 
 Setup instructions will be added as development progresses.
